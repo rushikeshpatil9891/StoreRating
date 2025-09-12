@@ -162,11 +162,17 @@ class RatingController {
 
       const ratings = await Rating.findByUser(userId, filters);
 
+      // Get total count for pagination
+      const totalQuery = 'SELECT COUNT(*) as total FROM ratings WHERE user_id = ?';
+      const totalResult = await require('../config/database').execute(totalQuery, [userId]);
+      const totalRatings = totalResult[0].total;
+
       res.json({
         ratings,
         pagination: {
           limit: filters.limit,
-          offset: filters.offset
+          offset: filters.offset,
+          total: totalRatings
         }
       });
     } catch (error) {

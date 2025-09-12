@@ -31,11 +31,11 @@ const RatingHistory = () => {
         }
       });
 
-      const response = await api.get(`/ratings/user/${user.id}?${params}`);
-      setRatings(response.data);
+      const response = await api.get(`/ratings/user?${params}`);
+      setRatings(response.data.ratings || []);
 
       // Calculate pagination info
-      const totalRatings = response.data.length;
+      const totalRatings = response.data.pagination?.total || 0;
       const totalPages = Math.ceil(totalRatings / filters.limit);
       setPagination({
         currentPage: Math.floor(filters.offset / filters.limit) + 1,
