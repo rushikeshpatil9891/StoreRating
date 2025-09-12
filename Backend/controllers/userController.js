@@ -109,6 +109,162 @@ class UserController {
     }
   }
 
+  // Create normal user (Admin only)
+  static async createNormalUser(req, res) {
+    try {
+      const { name, email, address, password } = req.body;
+
+      // Validate required fields
+      if (!name || !email || !password) {
+        return res.status(400).json({
+          error: 'Name, email, and password are required'
+        });
+      }
+
+      // Check if user already exists
+      const existingUser = await User.findByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({
+          error: 'User with this email already exists'
+        });
+      }
+
+      // Create new normal user
+      const userId = await User.create({
+        name,
+        email,
+        address,
+        password,
+        role: 'normal_user'
+      });
+
+      // Get the created user (without password)
+      const newUser = await User.findById(userId);
+
+      res.status(201).json({
+        message: 'Normal user created successfully',
+        user: newUser
+      });
+
+    } catch (error) {
+      console.error('Create normal user error:', error);
+      res.status(500).json({
+        error: 'Internal server error during normal user creation'
+      });
+    }
+  }
+
+  // Create admin user (Admin only)
+  static async createAdminUser(req, res) {
+    try {
+      const { name, email, address, password } = req.body;
+
+      // Validate required fields
+      if (!name || !email || !password) {
+        return res.status(400).json({
+          error: 'Name, email, and password are required'
+        });
+      }
+
+      // Check if user already exists
+      const existingUser = await User.findByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({
+          error: 'User with this email already exists'
+        });
+      }
+
+      // Create new admin user
+      const userId = await User.create({
+        name,
+        email,
+        address,
+        password,
+        role: 'admin'
+      });
+
+      // Get the created user (without password)
+      const newUser = await User.findById(userId);
+
+      res.status(201).json({
+        message: 'Admin user created successfully',
+        user: newUser
+      });
+
+    } catch (error) {
+      console.error('Create admin user error:', error);
+      res.status(500).json({
+        error: 'Internal server error during admin user creation'
+      });
+    }
+  }
+
+  // Create store owner with store (Admin only)
+  static async createStoreOwnerWithStore(req, res) {
+    try {
+      const { name, email, address, password, storeName, storeEmail, storeAddress } = req.body;
+
+      // Validate required fields
+      if (!name || !email || !password || !storeName || !storeEmail) {
+        return res.status(400).json({
+          error: 'Name, email, password, store name, and store email are required'
+        });
+      }
+
+      // Check if user already exists
+      const existingUser = await User.findByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({
+          error: 'User with this email already exists'
+        });
+      }
+
+      // Check if store with this email already exists
+      const Store = require('../models/Store');
+      const existingStore = await Store.findByEmail(storeEmail);
+      if (existingStore) {
+        return res.status(400).json({
+          error: 'Store with this email already exists'
+        });
+      }
+
+      // Create new store owner user
+      const userId = await User.create({
+        name,
+        email,
+        address,
+        password,
+        role: 'store_owner'
+      });
+
+      // Get the created user
+      const newUser = await User.findById(userId);
+
+      // Create the store
+      const storeId = await Store.create({
+        name: storeName,
+        email: storeEmail,
+        address: storeAddress,
+        owner_id: userId
+      });
+
+      // Get the created store
+      const newStore = await Store.findById(storeId);
+
+      res.status(201).json({
+        message: 'Store owner and store created successfully',
+        user: newUser,
+        store: newStore
+      });
+
+    } catch (error) {
+      console.error('Create store owner with store error:', error);
+      res.status(500).json({
+        error: 'Internal server error during store owner creation'
+      });
+    }
+  }
+
   // Update user
   static async updateUser(req, res) {
     try {

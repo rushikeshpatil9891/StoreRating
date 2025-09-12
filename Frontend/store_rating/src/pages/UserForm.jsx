@@ -12,13 +12,20 @@ const UserForm = () => {
     name: '',
     email: '',
     address: '',
-    role: 'user'
+    password: '',
+    role: 'normal_user'
+  });
+  const [storeFormData, setStoreFormData] = useState({
+    name: '',
+    email: '',
+    address: ''
   });
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [validationErrors, setValidationErrors] = useState({});
+  const [userType, setUserType] = useState('normal'); // 'normal', 'admin', 'store_owner'
   const [isEdit, setIsEdit] = useState(false);
 
   const fetchUser = useCallback(async () => {
@@ -31,7 +38,8 @@ const UserForm = () => {
         name: userData.name || '',
         email: userData.email || '',
         address: userData.address || '',
-        role: userData.role || 'user'
+        password: '', // Don't populate password for security
+        role: userData.role || 'normal_user'
       });
     } catch (error) {
       setError('Failed to load user data');
@@ -50,6 +58,15 @@ const UserForm = () => {
     }
   }, [id, fetchUser]);
 
+  useEffect(() => {
+    if (!isEdit) {
+      setFormData(prev => ({
+        ...prev,
+        role: userType === 'admin' ? 'admin' : userType === 'store_owner' ? 'store_owner' : 'normal_user'
+      }));
+    }
+  }, [userType, isEdit]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -62,6 +79,22 @@ const UserForm = () => {
       setValidationErrors(prev => ({
         ...prev,
         [name]: ''
+      }));
+    }
+  };
+
+  const handleStoreChange = (e) => {
+    const { name, value } = e.target;
+    setStoreFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
+    // Clear validation error for this field
+    if (validationErrors[`store_${name}`]) {
+      setValidationErrors(prev => ({
+        ...prev,
+        [`store_${name}`]: ''
       }));
     }
   };
@@ -83,8 +116,31 @@ const UserForm = () => {
       errors.address = 'Address is required';
     }
 
+    if (!formData.password.trim()) {
+      errors.password = 'Password is required';
+    } else if (formData.password.length < 6) {
+      errors.password = 'Password must be at least 6 characters long';
+    }
+
     if (!formData.role) {
       errors.role = 'Role is required';
+    }
+
+    // Validate store fields if user type is store_owner
+    if (userType === 'store_owner') {
+      if (!storeFormData.name.trim()) {
+        errors.store_name = 'Store name is required';
+      }
+
+      if (!storeFormData.email.trim()) {
+        errors.store_email = 'Store email is required';
+      } else if (!/\S+@\S+\.\S+/.test(storeFormData.email)) {
+        errors.store_email = 'Store email is invalid';
+      }
+
+      if (!storeFormData.address.trim()) {
+        errors.store_address = 'Store address is required';
+      }
     }
 
     setValidationErrors(errors);
@@ -107,14 +163,58 @@ const UserForm = () => {
         await api.put(`/users/${id}`, formData);
         setSuccess('User updated successfully!');
       } else {
-        await api.post('/users', formData);
-        setSuccess('User created successfully!');
+        let endpoint = '/users';
+        let requestData = formData;
+
+        if (userType === 'normal') {
+          endpoint = '/users/normal';
+          requestData = {
+            name: formData.name,
+            email: formData.email,
+            address: formData.address,
+            password: formData.password
+          };
+        } else if (userType === 'admin') {
+          endpoint = '/users/admin';
+          requestData = {
+            name: formData.name,
+            email: formData.email,
+            address: formData.address,
+            password: formData.password
+          };
+        } else if (userType === 'store_owner') {
+          endpoint = '/users/store-owner';
+          requestData = {
+            name: formData.name,
+            email: formData.email,
+            address: formData.address,
+            password: formData.password,
+            storeName: storeFormData.name,
+            storeEmail: storeFormData.email,
+            storeAddress: storeFormData.address
+          };
+        }
+
+        await api.post(endpoint, requestData);
+
+        if (userType === 'store_owner') {
+          setSuccess('Store owner and store created successfully!');
+        } else {
+          setSuccess(`${userType === 'admin' ? 'Admin' : 'Normal'} user created successfully!`);
+        }
+
         // Reset form for new user creation
         setFormData({
           name: '',
           email: '',
           address: '',
-          role: 'user'
+          password: '',
+          role: userType === 'admin' ? 'admin' : userType === 'store_owner' ? 'store_owner' : 'normal_user'
+        });
+        setStoreFormData({
+          name: '',
+          email: '',
+          address: ''
         });
       }
 
@@ -162,7 +262,7 @@ const UserForm = () => {
           <Card>
             <Card.Header>
               <h3 className="text-center">
-                {isEdit ? 'Edit User' : 'Create New User'}
+                {isEdit ? 'Edit User' : `Create ${userType === 'admin' ? 'Admin' : userType === 'store_owner' ? 'Store Owner' : 'Normal'} User`}
               </h3>
             </Card.Header>
             <Card.Body>
@@ -170,6 +270,34 @@ const UserForm = () => {
               {success && <Alert variant="success">{success}</Alert>}
 
               <Form onSubmit={handleSubmit}>
+                {!isEdit && (
+                  <Form.Group className="mb-4">
+                    <Form.Label>User Type</Form.Label>
+                    <div className="d-flex gap-2">
+                      <Button
+                        variant={userType === 'normal' ? 'primary' : 'outline-primary'}
+                        onClick={() => setUserType('normal')}
+                        type="button"
+                      >
+                        Normal User
+                      </Button>
+                      <Button
+                        variant={userType === 'admin' ? 'primary' : 'outline-primary'}
+                        onClick={() => setUserType('admin')}
+                        type="button"
+                      >
+                        Admin User
+                      </Button>
+                      <Button
+                        variant={userType === 'store_owner' ? 'primary' : 'outline-primary'}
+                        onClick={() => setUserType('store_owner')}
+                        type="button"
+                      >
+                        Store Owner
+                      </Button>
+                    </div>
+                  </Form.Group>
+                )}
                 <Form.Group className="mb-3">
                   <Form.Label>Full Name *</Form.Label>
                   <Form.Control
@@ -219,7 +347,23 @@ const UserForm = () => {
                   </Form.Control.Feedback>
                 </Form.Group>
 
-                {canEditRole && (
+                <Form.Group className="mb-3">
+                  <Form.Label>Password *</Form.Label>
+                  <Form.Control
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    isInvalid={!!validationErrors.password}
+                    placeholder="Enter password"
+                    required
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {validationErrors.password}
+                  </Form.Control.Feedback>
+                </Form.Group>
+
+                {canEditRole && isEdit && (
                   <Form.Group className="mb-3">
                     <Form.Label>Role *</Form.Label>
                     <Form.Select
@@ -229,14 +373,69 @@ const UserForm = () => {
                       isInvalid={!!validationErrors.role}
                       required
                     >
-                      <option value="user">User</option>
-                      <option value="manager">Manager</option>
+                      <option value="normal_user">Normal User</option>
+                      <option value="store_owner">Store Owner</option>
                       <option value="admin">Admin</option>
                     </Form.Select>
                     <Form.Control.Feedback type="invalid">
                       {validationErrors.role}
                     </Form.Control.Feedback>
                   </Form.Group>
+                )}
+
+                {userType === 'store_owner' && (
+                  <>
+                    <hr />
+                    <h5 className="mb-3">Store Information</h5>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Store Name *</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="name"
+                        value={storeFormData.name}
+                        onChange={handleStoreChange}
+                        isInvalid={!!validationErrors.store_name}
+                        placeholder="Enter store name"
+                        required
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {validationErrors.store_name}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+
+                    <Form.Group className="mb-3">
+                      <Form.Label>Store Email *</Form.Label>
+                      <Form.Control
+                        type="email"
+                        name="email"
+                        value={storeFormData.email}
+                        onChange={handleStoreChange}
+                        isInvalid={!!validationErrors.store_email}
+                        placeholder="Enter store email"
+                        required
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {validationErrors.store_email}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+
+                    <Form.Group className="mb-3">
+                      <Form.Label>Store Address *</Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        name="address"
+                        value={storeFormData.address}
+                        onChange={handleStoreChange}
+                        isInvalid={!!validationErrors.store_address}
+                        placeholder="Enter store address"
+                        rows={3}
+                        required
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {validationErrors.store_address}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </>
                 )}
 
                 <div className="d-flex gap-2">
@@ -249,10 +448,10 @@ const UserForm = () => {
                     {loading ? (
                       <>
                         <Spinner animation="border" size="sm" className="me-2" />
-                        {isEdit ? 'Updating...' : 'Creating...'}
+                        {isEdit ? 'Updating...' : `Creating ${userType === 'admin' ? 'Admin' : userType === 'store_owner' ? 'Store Owner' : 'User'}...`}
                       </>
                     ) : (
-                      isEdit ? 'Update User' : 'Create User'
+                      isEdit ? 'Update User' : `Create ${userType === 'admin' ? 'Admin' : userType === 'store_owner' ? 'Store Owner' : 'User'}`
                     )}
                   </Button>
 

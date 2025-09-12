@@ -15,6 +15,15 @@ router.get('/:id', authenticateToken, UserController.getUserById);
 // Create new user (Admin only)
 router.post('/', authenticateToken, authorizeRoles('admin'), UserController.createUser);
 
+// Create normal user (Admin only)
+router.post('/normal', authenticateToken, authorizeRoles('admin'), UserController.createNormalUser);
+
+// Create admin user (Admin only)
+router.post('/admin', authenticateToken, authorizeRoles('admin'), UserController.createAdminUser);
+
+// Create store owner with store (Admin only)
+router.post('/store-owner', authenticateToken, authorizeRoles('admin'), UserController.createStoreOwnerWithStore);
+
 // Update user
 router.put('/:id', authenticateToken, UserController.updateUser);
 
