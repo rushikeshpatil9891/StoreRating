@@ -50,7 +50,7 @@ const RatingManagement = () => {
       });
 
       const response = await api.get(`/ratings/store/${selectedStore.id}?${params}`);
-      setRatings(response.data);
+      setRatings(response.data.ratings || []);
     } catch (error) {
       setError('Failed to load ratings');
       console.error('Ratings fetch error:', error);
