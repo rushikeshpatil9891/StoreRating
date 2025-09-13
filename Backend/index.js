@@ -18,6 +18,7 @@ app.use('/api/users', require('./routes/users'));
 app.use('/api/stores', require('./routes/stores'));
 app.use('/api/ratings', require('./routes/ratings'));
 app.use('/api/dashboard', require('./routes/dashboard'));
+app.use('/api/activities', require('./routes/activityLogs'));
 
 // Health check route
 app.get('/api/health', (req, res) => {

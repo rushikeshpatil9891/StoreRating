@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const ActivityLogController = require('./activityLogController');
 
 class UserController {
   // Get all users (Admin only)
@@ -302,6 +303,10 @@ class UserController {
       }
 
       await User.update(id, updateData);
+
+      // Log the profile update activity
+      const updatedFields = Object.keys(updateData).join(', ');
+      await ActivityLogController.logActivity(id, 'PROFILE_UPDATED', `User profile updated: ${updatedFields}`);
 
       // Get updated user
       const updatedUser = await User.findById(id);

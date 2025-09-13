@@ -41,6 +41,21 @@ CREATE TABLE IF NOT EXISTS ratings (
   FOREIGN KEY (store_id) REFERENCES stores(id) ON DELETE CASCADE
 );
 
+-- Activity logs table for tracking user activities
+CREATE TABLE IF NOT EXISTS activity_logs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT,
+  action VARCHAR(100) NOT NULL,
+  description TEXT,
+  ip_address VARCHAR(45),
+  user_agent TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_user_id (user_id),
+  INDEX idx_action (action),
+  INDEX idx_created_at (created_at)
+);
+
 -- Indexes for better performance
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_role ON users(role);

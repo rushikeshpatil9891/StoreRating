@@ -26,7 +26,7 @@ const StoreForm = () => {
     try {
       setFetchLoading(true);
       const response = await api.get(`/stores/${id}`);
-      const store = response.data;
+      const store = response.data.store || response.data;
 
       // Check if user can edit this store
       if (user?.role !== 'admin' && store.owner_id !== user?.id) {
@@ -35,10 +35,10 @@ const StoreForm = () => {
       }
 
       setFormData({
-        name: store.name,
-        email: store.email,
-        address: store.address,
-        owner_id: store.owner_id
+        name: store.name || '',
+        email: store.email || '',
+        address: store.address || '',
+        owner_id: store.owner_id || user?.id || ''
       });
     } catch (error) {
       setError('Failed to load store data');
@@ -52,7 +52,7 @@ const StoreForm = () => {
     if (isEditing) {
       fetchStore();
     }
-  }, [isEditing, fetchStore]);
+  }, [isEditing, fetchStore, id, user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

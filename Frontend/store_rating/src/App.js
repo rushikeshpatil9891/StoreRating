@@ -15,10 +15,6 @@ import UserProfile from './pages/UserProfile.jsx';
 import UserList from './pages/UserList.jsx';
 import UserForm from './pages/UserForm.jsx';
 import UserAnalytics from './pages/UserAnalytics.jsx';
-import Notifications from './pages/Notifications.jsx';
-import AdvancedSearch from './pages/AdvancedSearch.jsx';
-import DataExport from './pages/DataExport.jsx';
-import SystemMonitoring from './pages/SystemMonitoring.jsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
@@ -123,38 +119,6 @@ function App() {
               element={
                 <ProtectedRoute requiredRole="admin">
                   <UserAnalytics />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/notifications"
-              element={
-                <ProtectedRoute>
-                  <Notifications />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/search"
-              element={
-                <ProtectedRoute>
-                  <AdvancedSearch />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/export"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <DataExport />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/system"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <SystemMonitoring />
                 </ProtectedRoute>
               }
             />

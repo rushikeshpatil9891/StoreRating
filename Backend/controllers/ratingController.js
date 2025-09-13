@@ -1,5 +1,6 @@
 const Rating = require('../models/Rating');
 const Store = require('../models/Store');
+const ActivityLogController = require('./activityLogController');
 
 class RatingController {
   // Submit or update a rating
@@ -25,6 +26,9 @@ class RatingController {
 
       // Submit or update rating
       await Rating.upsert(userId, store_id, rating);
+
+      // Log the rating activity
+      await ActivityLogController.logActivity(userId, 'RATING_SUBMITTED', `User rated store ${store.name} with ${rating} stars`, req);
 
       // Get updated store stats
       const stats = await Rating.getStoreStats(store_id);

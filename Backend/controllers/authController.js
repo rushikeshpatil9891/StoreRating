@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const ActivityLogController = require('./activityLogController');
 
 class AuthController {
   // User registration
@@ -23,6 +24,9 @@ class AuthController {
         password,
         role: 'normal_user' // Default role for registration
       });
+
+      // Log the registration activity
+      await ActivityLogController.logActivity(userId, 'USER_REGISTERED', `User ${name} registered with email ${email}`);
 
       // Get the created user (without password)
       const newUser = await User.findById(userId);
@@ -87,6 +91,9 @@ class AuthController {
         process.env.JWT_SECRET,
         { expiresIn: process.env.JWT_EXPIRE || '7d' }
       );
+
+      // Log the login activity
+      await ActivityLogController.logActivity(user.id, 'USER_LOGIN', `User ${user.name} logged in`);
 
       res.json({
         message: 'Login successful',

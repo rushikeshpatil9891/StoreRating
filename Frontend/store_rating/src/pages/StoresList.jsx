@@ -1,14 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, Row, Col, Button, Form, Alert, Spinner } from 'react-bootstrap';
-import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 import { Link } from 'react-router-dom';
 
 const StoresList = () => {
-  const { user } = useAuth();
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     name: '',
     email: '',
@@ -22,6 +21,10 @@ const StoresList = () => {
     currentPage: 1,
     totalPages: 1
   });
+
+  // Refs for maintaining focus
+  const debounceRef = useRef(null);
+  const searchInputRef = useRef(null);
 
   const fetchStores = useCallback(async () => {
     try {
@@ -48,6 +51,70 @@ const StoresList = () => {
   useEffect(() => {
     fetchStores();
   }, [fetchStores]);
+
+  // Sync search term with filters
+  useEffect(() => {
+    setSearchTerm(filters.name);
+  }, [filters.name]);
+
+  // Cleanup debounce timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, []);
+
+  // Debounced search function
+  const debouncedSearch = useCallback((searchValue) => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    debounceRef.current = setTimeout(() => {
+      setFilters(prev => ({
+        ...prev,
+        name: searchValue,
+        offset: 0 // Reset to first page when searching
+      }));
+      setPagination(prev => ({ ...prev, currentPage: 1 }));
+
+      // Maintain focus on search input after search
+      setTimeout(() => {
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+        }
+      }, 100);
+    }, 500); // 500ms delay
+  }, []);
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    debouncedSearch(value);
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    // Clear any pending debounced search
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    setFilters(prev => ({
+      ...prev,
+      name: searchTerm,
+      offset: 0
+    }));
+    setPagination(prev => ({ ...prev, currentPage: 1 }));
+
+    // Maintain focus on search input after search
+    setTimeout(() => {
+      if (searchInputRef.current) {
+        searchInputRef.current.focus();
+      }
+    }, 100);
+  };
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -100,11 +167,6 @@ const StoresList = () => {
     <div>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Stores</h2>
-        {(user?.role === 'store_owner' || user?.role === 'admin') && (
-          <Link to="/stores/new">
-            <Button variant="primary">Add New Store</Button>
-          </Link>
-        )}
       </div>
 
       {error && <Alert variant="danger">{error}</Alert>}
@@ -112,58 +174,84 @@ const StoresList = () => {
       {/* Filters */}
       <Card className="mb-4">
         <Card.Body>
-          <Row>
-            <Col md={3}>
-              <Form.Group>
-                <Form.Label>Search by Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="name"
-                  value={filters.name}
-                  onChange={handleFilterChange}
-                  placeholder="Store name..."
-                />
-              </Form.Group>
-            </Col>
-            <Col md={3}>
-              <Form.Group>
-                <Form.Label>Search by Email</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="email"
-                  value={filters.email}
-                  onChange={handleFilterChange}
-                  placeholder="Store email..."
-                />
-              </Form.Group>
-            </Col>
-            <Col md={3}>
-              <Form.Group>
-                <Form.Label>Search by Address</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="address"
-                  value={filters.address}
-                  onChange={handleFilterChange}
-                  placeholder="Store address..."
-                />
-              </Form.Group>
-            </Col>
-            <Col md={3}>
-              <Form.Group>
-                <Form.Label>Sort By</Form.Label>
-                <Form.Select
-                  name="sortBy"
-                  value={filters.sortBy}
-                  onChange={handleFilterChange}
-                >
-                  <option value="created_at">Date Created</option>
-                  <option value="name">Name</option>
-                  <option value="average_rating">Rating</option>
-                </Form.Select>
-              </Form.Group>
-            </Col>
-          </Row>
+          <Form onSubmit={handleSearchSubmit}>
+            <Row>
+              <Col md={3}>
+                <Form.Group>
+                  <Form.Label>Search by Name</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    placeholder="Store name..."
+                    ref={searchInputRef}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={3}>
+                <Form.Group>
+                  <Form.Label>Search by Email</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="email"
+                    value={filters.email}
+                    onChange={handleFilterChange}
+                    placeholder="Store email..."
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={3}>
+                <Form.Group>
+                  <Form.Label>Search by Address</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="address"
+                    value={filters.address}
+                    onChange={handleFilterChange}
+                    placeholder="Store address..."
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={3}>
+                <Form.Group>
+                  <Form.Label>&nbsp;</Form.Label>
+                  <div>
+                    <Button type="submit" variant="primary" className="w-100" disabled={loading}>
+                      {loading ? (
+                        <>
+                          <Spinner
+                            as="span"
+                            animation="border"
+                            size="sm"
+                            role="status"
+                            aria-hidden="true"
+                            className="me-2"
+                          />
+                          Searching...
+                        </>
+                      ) : (
+                        'Search'
+                      )}
+                    </Button>
+                  </div>
+                </Form.Group>
+              </Col>
+              <Col md={3}>
+                <Form.Group>
+                  <Form.Label>Sort By</Form.Label>
+                  <Form.Select
+                    name="sortBy"
+                    value={filters.sortBy}
+                    onChange={handleFilterChange}
+                  >
+                    <option value="created_at">Date Created</option>
+                    <option value="name">Name</option>
+                    <option value="average_rating">Rating</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            </Row>
+          </Form>
         </Card.Body>
       </Card>
 

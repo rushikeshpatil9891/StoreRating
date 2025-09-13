@@ -24,7 +24,7 @@ const UserProfile = () => {
     try {
       setFetchLoading(true);
       const response = await api.get(`/users/${user.id}`);
-      const userData = response.data;
+      const userData = response.data.user || response.data;
 
       setFormData({
         name: userData.name || '',

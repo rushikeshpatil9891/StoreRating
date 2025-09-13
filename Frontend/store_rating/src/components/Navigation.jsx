@@ -41,14 +41,6 @@ const Navigation = () => {
                   <Nav.Link>Profile</Nav.Link>
                 </LinkContainer>
 
-                <LinkContainer to="/notifications">
-                  <Nav.Link>Notifications</Nav.Link>
-                </LinkContainer>
-
-                <LinkContainer to="/search">
-                  <Nav.Link>Advanced Search</Nav.Link>
-                </LinkContainer>
-
                 {user?.role === 'store_owner' && (
                   <LinkContainer to="/ratings/manage">
                     <Nav.Link>Manage Ratings</Nav.Link>
@@ -62,12 +54,6 @@ const Navigation = () => {
                     </LinkContainer>
                     <LinkContainer to="/users/analytics">
                       <Nav.Link>Analytics</Nav.Link>
-                    </LinkContainer>
-                    <LinkContainer to="/export">
-                      <Nav.Link>Data Export</Nav.Link>
-                    </LinkContainer>
-                    <LinkContainer to="/system">
-                      <Nav.Link>System Monitor</Nav.Link>
                     </LinkContainer>
                   </>
                 )}
