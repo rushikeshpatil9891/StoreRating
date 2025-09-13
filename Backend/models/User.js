@@ -129,6 +129,59 @@ class User {
     return result;
   }
 
+  // Get detailed user analytics
+  static async getUserAnalytics() {
+    try {
+      // Total users
+      const totalQuery = 'SELECT COUNT(*) as total FROM users';
+      const totalResult = await execute(totalQuery);
+      const totalUsers = totalResult[0].total;
+
+      // Active users (users created in the last 30 days)
+      const activeQuery = 'SELECT COUNT(*) as active FROM users WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)';
+      const activeResult = await execute(activeQuery);
+      const activeUsers = activeResult[0].active;
+
+      // New users this month
+      const newThisMonthQuery = 'SELECT COUNT(*) as new_this_month FROM users WHERE YEAR(created_at) = YEAR(CURDATE()) AND MONTH(created_at) = MONTH(CURDATE())';
+      const newThisMonthResult = await execute(newThisMonthQuery);
+      const newUsersThisMonth = newThisMonthResult[0].new_this_month;
+
+      // Average users per day (last 30 days)
+      const avgPerDayQuery = 'SELECT COUNT(*) / 30 as avg_per_day FROM users WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)';
+      const avgPerDayResult = await execute(avgPerDayQuery);
+      const averageUsersPerDay = Math.round(avgPerDayResult[0].avg_per_day * 100) / 100;
+
+      // Role distribution
+      const roleQuery = 'SELECT role, COUNT(*) as count FROM users GROUP BY role';
+      const roleResult = await execute(roleQuery);
+      const roleDistribution = roleResult.reduce((acc, row) => {
+        acc[row.role] = row.count;
+        return acc;
+      }, {});
+
+      // Recent activity (last 10 user registrations)
+      const recentQuery = 'SELECT name, email, role, created_at FROM users ORDER BY created_at DESC LIMIT 10';
+      const recentResult = await execute(recentQuery);
+      const recentActivity = recentResult.map(user => ({
+        description: `${user.name} (${user.email}) joined as ${user.role}`,
+        timestamp: user.created_at
+      }));
+
+      return {
+        totalUsers,
+        activeUsers,
+        newUsersThisMonth,
+        averageUsersPerDay,
+        roleDistribution,
+        recentActivity
+      };
+    } catch (error) {
+      console.error('Error fetching user analytics:', error);
+      throw error;
+    }
+  }
+
   // Verify password
   static async verifyPassword(plainPassword, hashedPassword) {
     return await bcrypt.compare(plainPassword, hashedPassword);

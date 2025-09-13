@@ -12,6 +12,9 @@ router.get('/stats', authenticateToken, authorizeRoles('admin'), StoreController
 // Get stores owned by current user (Store owners)
 router.get('/my-stores', authenticateToken, authorizeRoles('store_owner'), StoreController.getMyStores);
 
+// Get stores by owner ID (Admin only)
+router.get('/owner/:ownerId', authenticateToken, authorizeRoles('admin'), StoreController.getStoresByOwnerId);
+
 // Get store by ID
 router.get('/:id', authenticateToken, StoreController.getStoreById);
 

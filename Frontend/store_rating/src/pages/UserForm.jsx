@@ -27,12 +27,13 @@ const UserForm = () => {
   const [validationErrors, setValidationErrors] = useState({});
   const [userType, setUserType] = useState('normal'); // 'normal', 'admin', 'store_owner'
   const [isEdit, setIsEdit] = useState(false);
+  const [storeId, setStoreId] = useState(null);
 
   const fetchUser = useCallback(async () => {
     try {
       setFetchLoading(true);
       const response = await api.get(`/users/${id}`);
-      const userData = response.data;
+      const userData = response.data.user; // Access the user object from the response
 
       setFormData({
         name: userData.name || '',
@@ -41,6 +42,34 @@ const UserForm = () => {
         password: '', // Don't populate password for security
         role: userData.role || 'normal_user'
       });
+
+      // Set user type based on role for editing
+      if (userData.role === 'admin') {
+        setUserType('admin');
+      } else if (userData.role === 'store_owner') {
+        setUserType('store_owner');
+        
+        // Fetch store data for store owner
+        try {
+          const storeResponse = await api.get(`/stores/owner/${id}`);
+          
+          if (storeResponse.data.stores && storeResponse.data.stores.length > 0) {
+            const storeData = storeResponse.data.stores[0]; // Get the first store (assuming one store per owner)
+            
+            setStoreId(storeData.id);
+            setStoreFormData({
+              name: storeData.name || '',
+              email: storeData.email || '',
+              address: storeData.address || ''
+            });
+          }
+        } catch (storeError) {
+          console.error('Error fetching store data:', storeError);
+          // Don't fail the whole operation if store fetch fails
+        }
+      } else {
+        setUserType('normal');
+      }
     } catch (error) {
       setError('Failed to load user data');
       console.error('User fetch error:', error);
@@ -116,10 +145,18 @@ const UserForm = () => {
       errors.address = 'Address is required';
     }
 
-    if (!formData.password.trim()) {
-      errors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      errors.password = 'Password must be at least 6 characters long';
+    // Password is required only for new users, optional for editing
+    if (!isEdit) {
+      if (!formData.password.trim()) {
+        errors.password = 'Password is required';
+      } else if (formData.password.length < 6) {
+        errors.password = 'Password must be at least 6 characters long';
+      }
+    } else {
+      // For editing, if password is provided, validate its length
+      if (formData.password.trim() && formData.password.length < 6) {
+        errors.password = 'Password must be at least 6 characters long';
+      }
     }
 
     if (!formData.role) {
@@ -160,7 +197,31 @@ const UserForm = () => {
 
     try {
       if (isEdit) {
-        await api.put(`/users/${id}`, formData);
+        // For editing, only include password if it's provided
+        const updateData = {
+          name: formData.name,
+          email: formData.email,
+          address: formData.address,
+          role: formData.role
+        };
+
+        if (formData.password.trim()) {
+          updateData.password = formData.password;
+        }
+
+        await api.put(`/users/${id}`, updateData);
+
+        // If user is a store owner and we have store data, also update the store
+        if (userType === 'store_owner' && storeId) {
+          const storeUpdateData = {
+            name: storeFormData.name,
+            email: storeFormData.email,
+            address: storeFormData.address
+          };
+
+          await api.put(`/stores/${storeId}`, storeUpdateData);
+        }
+
         setSuccess('User updated successfully!');
       } else {
         let endpoint = '/users';
@@ -348,15 +409,15 @@ const UserForm = () => {
                 </Form.Group>
 
                 <Form.Group className="mb-3">
-                  <Form.Label>Password *</Form.Label>
+                  <Form.Label>Password {isEdit ? '(Leave blank to keep current)' : '*'}</Form.Label>
                   <Form.Control
                     type="password"
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
                     isInvalid={!!validationErrors.password}
-                    placeholder="Enter password"
-                    required
+                    placeholder={isEdit ? "Leave blank to keep current password" : "Enter password"}
+                    required={!isEdit}
                   />
                   <Form.Control.Feedback type="invalid">
                     {validationErrors.password}

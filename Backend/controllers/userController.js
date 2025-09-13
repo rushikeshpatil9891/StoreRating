@@ -269,7 +269,7 @@ class UserController {
   static async updateUser(req, res) {
     try {
       const { id } = req.params;
-      const { name, email, address, role } = req.body;
+      const { name, email, address, role, password } = req.body;
       const requestingUser = req.user;
 
       // Users can only update their own profile unless they're admin
@@ -284,6 +284,7 @@ class UserController {
       if (name) updateData.name = name;
       if (email) updateData.email = email;
       if (address !== undefined) updateData.address = address;
+      if (password) updateData.password = password;
 
       // Only admin can change roles
       if (role && requestingUser.role === 'admin') {
@@ -359,6 +360,17 @@ class UserController {
       res.json({ stats: formattedStats });
     } catch (error) {
       console.error('Get user stats error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  // Get detailed user analytics (Admin only)
+  static async getUserAnalytics(req, res) {
+    try {
+      const analytics = await User.getUserAnalytics();
+      res.json(analytics);
+    } catch (error) {
+      console.error('Get user analytics error:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   }

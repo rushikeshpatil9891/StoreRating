@@ -76,6 +76,19 @@ class StoreController {
     }
   }
 
+  // Get stores by owner ID (Admin only)
+  static async getStoresByOwnerId(req, res) {
+    try {
+      const { ownerId } = req.params;
+      const stores = await Store.findByOwner(ownerId);
+
+      res.json({ stores });
+    } catch (error) {
+      console.error('Get stores by owner ID error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
   // Create new store (Admin only)
   static async createStore(req, res) {
     try {

@@ -9,6 +9,9 @@ router.get('/', authenticateToken, authorizeRoles('admin'), UserController.getAl
 // Get user statistics (Admin only)
 router.get('/stats', authenticateToken, authorizeRoles('admin'), UserController.getUserStats);
 
+// Get detailed user analytics (Admin only)
+router.get('/analytics', authenticateToken, authorizeRoles('admin'), UserController.getUserAnalytics);
+
 // Get user by ID
 router.get('/:id', authenticateToken, UserController.getUserById);
 
