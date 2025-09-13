@@ -14,6 +14,8 @@ const Register = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -115,26 +117,44 @@ const Register = () => {
 
                 <Form.Group className="mb-3">
                   <Form.Label>Password</Form.Label>
-                  <Form.Control
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                    placeholder="Enter your password"
-                  />
+                  <div className="input-group">
+                    <Form.Control
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      required
+                      placeholder="Enter your password"
+                    />
+                    <Button
+                      variant="outline-secondary"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="border-start-0"
+                    >
+                      <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`}></i>
+                    </Button>
+                  </div>
                 </Form.Group>
 
                 <Form.Group className="mb-3">
                   <Form.Label>Confirm Password</Form.Label>
-                  <Form.Control
-                    type="password"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    required
-                    placeholder="Confirm your password"
-                  />
+                  <div className="input-group">
+                    <Form.Control
+                      type={showConfirmPassword ? "text" : "password"}
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      required
+                      placeholder="Confirm your password"
+                    />
+                    <Button
+                      variant="outline-secondary"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="border-start-0"
+                    >
+                      <i className={`bi ${showConfirmPassword ? 'bi-eye-slash' : 'bi-eye'}`}></i>
+                    </Button>
+                  </div>
                 </Form.Group>
 
                 <Button

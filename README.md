@@ -89,16 +89,55 @@ npm start
 
 **Frontend will run on:** `http://localhost:3000`
 
+### 4. Default Admin Account
+
+After setting up the database, you can log in with the default admin account:
+
+- **Email:** `admin@storerating.com`
+- **Password:** `admin123`
+
+This admin account is created automatically during database initialization and has full system access.
+
 ## 🔧 Environment Configuration
 
 ### Backend (.env file)
+
+The application supports both **local** and **cloud** databases. Choose the appropriate configuration:
+
+#### For Local MySQL Database (Offline):
 ```env
 DB_HOST=localhost
-DB_USER=your_mysql_username
+DB_USER=root
 DB_PASSWORD=your_mysql_password
 DB_NAME=store_rating_db
-JWT_SECRET=your_jwt_secret_key
-PORT=5000
+DB_SSL=false
+```
+
+#### For Cloud Database (Online - Aiven, AWS RDS, etc.):
+```env
+DB_HOST=your_cloud_db_host
+DB_PORT=3306
+DB_USER=your_cloud_db_user
+DB_PASSWORD=your_cloud_db_password
+DB_NAME=store_rating_db
+DB_SSL=true
+DB_SSL_CA=ca.pem
+```
+
+**Note:** Your `.env` file contains both configurations. To switch between local and cloud databases:
+
+1. **For Local Development:** Keep the "LOCAL DATABASE" section uncommented and the "CLOUD DATABASE" section commented
+2. **For Production/Cloud:** Comment out the "LOCAL DATABASE" section and uncomment the "CLOUD DATABASE" section
+
+### Switching Between Environments
+
+```bash
+# For local development (default)
+# Keep DB_SSL=false and local settings
+
+# For cloud deployment
+# Uncomment cloud settings and set DB_SSL=true
+# Make sure ca.pem certificate file is present
 ```
 
 ### Frontend (if needed)

@@ -1,6 +1,10 @@
 const mysql = require('mysql2/promise');
 const fs = require('fs');
 
+// Database configuration that works for both local and cloud databases
+// For local databases: Set DB_SSL=false (or omit it)
+// For cloud databases (like Aiven): Set DB_SSL=true and provide DB_SSL_CA path
+
 const dbConfig = {
   host: process.env.DB_HOST,
   port: process.env.DB_PORT || 3306,
@@ -12,7 +16,7 @@ const dbConfig = {
   queueLimit: 0,
   ssl: process.env.DB_SSL === "true"
     ? {
-        ca: fs.readFileSync(process.env.DB_SSL_CA, 'utf8'), // read from file path
+        ca: fs.readFileSync(__dirname + '/../' + process.env.DB_SSL_CA, 'utf8'),
         rejectUnauthorized: true
       }
     : false
@@ -23,6 +27,7 @@ let pool;
 const getPool = () => {
   if (!pool) {
     pool = mysql.createPool(dbConfig);
+    console.log('Database connection pool created successfully');
   }
   return pool;
 };

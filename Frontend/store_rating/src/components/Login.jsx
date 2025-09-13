@@ -10,6 +10,7 @@ const Login = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -63,14 +64,23 @@ const Login = () => {
 
                 <Form.Group className="mb-3">
                   <Form.Label>Password</Form.Label>
-                  <Form.Control
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                    placeholder="Enter your password"
-                  />
+                  <div className="input-group">
+                    <Form.Control
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      required
+                      placeholder="Enter your password"
+                    />
+                    <Button
+                      variant="outline-secondary"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="border-start-0"
+                    >
+                      <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`}></i>
+                    </Button>
+                  </div>
                 </Form.Group>
 
                 <Button

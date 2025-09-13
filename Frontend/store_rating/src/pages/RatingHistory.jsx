@@ -48,7 +48,7 @@ const RatingHistory = () => {
     } finally {
       setLoading(false);
     }
-  }, [user.id, filters]);
+  }, [filters]);
 
   useEffect(() => {
     if (user) {
