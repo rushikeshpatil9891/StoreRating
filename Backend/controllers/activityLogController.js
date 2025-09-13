@@ -62,10 +62,8 @@ class ActivityLogController {
   // Get recent activities (Admin only)
   static async getRecentActivities(req, res) {
     try {
-      console.log('getRecentActivities called by user:', req.user?.id, req.user?.role);
       const { limit = 50 } = req.query;
       const activities = await ActivityLog.getRecentActivities(parseInt(limit));
-      console.log(`Returning ${activities.length} activities`);
       res.json({ activities });
     } catch (error) {
       console.error('Get recent activities error:', error);
@@ -76,7 +74,6 @@ class ActivityLogController {
   // Log an activity (internal method)
   static async logActivity(userId, action, description, req = null) {
     try {
-      console.log(`Logging activity: ${action} for user ${userId}`);
       const activityData = {
         user_id: userId,
         action,
@@ -86,7 +83,6 @@ class ActivityLogController {
       };
 
       const result = await ActivityLog.create(activityData);
-      console.log(`Activity logged successfully:`, result);
     } catch (error) {
       console.error('Error logging activity:', error);
       console.error('Activity data:', { userId, action, description });
