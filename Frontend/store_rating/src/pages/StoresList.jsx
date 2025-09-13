@@ -2,8 +2,10 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, Row, Col, Button, Form, Alert, Spinner } from 'react-bootstrap';
 import api from '../services/api';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const StoresList = () => {
+  const { user } = useAuth();
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -37,16 +39,25 @@ const StoresList = () => {
         }
       });
 
-      const response = await api.get(`/stores?${params}`);
+      // Use different endpoint based on user role
+      const endpoint = user?.role === 'store_owner' ? '/stores/my-stores' : `/stores?${params}`;
+      const response = await api.get(endpoint);
       setStores(response.data.stores || []);
-      setPagination(response.data.pagination || { currentPage: 1, totalPages: 1 });
+      
+      // Handle pagination only for non-store-owner users
+      if (user?.role !== 'store_owner') {
+        setPagination(response.data.pagination || { currentPage: 1, totalPages: 1 });
+      } else {
+        // For store owners, set basic pagination
+        setPagination({ currentPage: 1, totalPages: 1 });
+      }
     } catch (error) {
       setError('Failed to load stores');
       console.error('Stores fetch error:', error);
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [filters, user?.role]);
 
   useEffect(() => {
     fetchStores();
@@ -166,7 +177,7 @@ const StoresList = () => {
   return (
     <div>
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Stores</h2>
+        <h2>{user?.role === 'store_owner' ? 'My Stores' : 'Stores'}</h2>
       </div>
 
       {error && <Alert variant="danger">{error}</Alert>}

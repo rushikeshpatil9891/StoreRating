@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Form, Button, Card, Alert, Container, Row, Col, Spinner } from 'react-bootstrap';
 import { useAuth } from '../contexts/AuthContext';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../services/api';
 
 const UserForm = () => {
   const { user: currentUser } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -95,6 +96,28 @@ const UserForm = () => {
       }));
     }
   }, [userType, isEdit]);
+
+  // Handle role parameter from URL for new users
+  useEffect(() => {
+    if (!id) { // Only for new users (no id parameter)
+      const roleParam = searchParams.get('role');
+      if (roleParam) {
+        setFormData(prev => ({
+          ...prev,
+          role: roleParam
+        }));
+        
+        // Set user type based on role
+        if (roleParam === 'admin') {
+          setUserType('admin');
+        } else if (roleParam === 'store_owner') {
+          setUserType('store_owner');
+        } else {
+          setUserType('normal');
+        }
+      }
+    }
+  }, [id, searchParams]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

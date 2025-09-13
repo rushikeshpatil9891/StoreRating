@@ -20,8 +20,9 @@ const StoreDetails = () => {
     try {
       setLoading(true);
 
-      // Fetch store details
-      const storeResponse = await api.get(`/stores/${id}`);
+      // Fetch store details - use different endpoint based on user role
+      const storeEndpoint = user?.role === 'store_owner' ? `/stores/${id}/details` : `/stores/${id}`;
+      const storeResponse = await api.get(storeEndpoint);
       console.log('Store response data:', storeResponse.data);
       console.log('Store data structure:', storeResponse.data.store);
       setStore(storeResponse.data.store);
@@ -74,7 +75,7 @@ const StoreDetails = () => {
       stars.push(
         <span
           key={i}
-          className={`fs-4 ${interactive ? 'cursor-pointer' : ''} ${i <= rating ? 'text-warning' : 'text-muted'}`}
+          className={`fs-2 ${interactive ? 'cursor-pointer' : ''} ${i <= rating ? 'text-warning' : 'text-muted'}`}
           onClick={interactive ? () => onRatingChange && onRatingChange(i) : undefined}
           style={interactive ? { cursor: 'pointer' } : {}}
         >
@@ -177,7 +178,7 @@ const StoreDetails = () => {
           </Card>
 
           {/* Rating Form */}
-          {user && !userRating && (
+          {user && user.role !== 'admin' && !userRating && (
             <Card className="mb-4">
               <Card.Header>
                 <div className="d-flex justify-content-between align-items-center">
@@ -203,7 +204,7 @@ const StoreDetails = () => {
           )}
 
           {/* User's Existing Rating */}
-          {userRating && (
+          {userRating && user?.role !== 'admin' && (
             <Card className="mb-4">
               <Card.Header>Your Rating</Card.Header>
               <Card.Body>
@@ -283,7 +284,7 @@ const StoreDetails = () => {
                 <Button variant="outline-primary" onClick={() => window.history.back()}>
                   ← Back to Stores
                 </Button>
-                {user && (
+                {user && user.role !== 'admin' && (
                   <Button
                     variant="primary"
                     onClick={() => setShowRatingForm(!showRatingForm)}

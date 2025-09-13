@@ -110,7 +110,6 @@ const Register = () => {
                     onChange={handleChange}
                   >
                     <option value="normal_user">Normal User</option>
-                    <option value="store_owner">Store Owner</option>
                   </Form.Select>
                 </Form.Group>
 

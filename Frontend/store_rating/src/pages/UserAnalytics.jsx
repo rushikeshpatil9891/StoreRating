@@ -128,13 +128,14 @@ const UserAnalytics = () => {
             <Row>
               {Object.entries(analytics.roleDistribution).map(([role, count]) => (
                 <Col md={4} key={role} className="mb-3">
-                  <div className="d-flex justify-content-between align-items-center">
-                    <span className="text-capitalize">{role}s:</span>
+                  <div className="d-flex align-items-center">
+                    <span className="text-capitalize me-4">{role}s:</span>
                     <Badge
                       bg={
                         role === 'admin' ? 'danger' :
                         role === 'manager' ? 'warning' : 'primary'
                       }
+                      className="fs-7 px-3 py-2"
                     >
                       {count}
                     </Badge>
@@ -142,26 +143,6 @@ const UserAnalytics = () => {
                 </Col>
               ))}
             </Row>
-          </Card.Body>
-        </Card>
-      )}
-
-      {analytics?.recentActivity && analytics.recentActivity.length > 0 && (
-        <Card className="mt-4">
-          <Card.Header>
-            <h5>Recent User Activity</h5>
-          </Card.Header>
-          <Card.Body>
-            <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-              {analytics.recentActivity.map((activity, index) => (
-                <div key={index} className="mb-2 p-2 border rounded">
-                  <small className="text-muted">
-                    {new Date(activity.timestamp).toLocaleString()}
-                  </small>
-                  <div>{activity.description}</div>
-                </div>
-              ))}
-            </div>
           </Card.Body>
         </Card>
       )}

@@ -29,13 +29,17 @@ const Navigation = () => {
                   <Nav.Link>Dashboard</Nav.Link>
                 </LinkContainer>
 
-                <LinkContainer to="/stores">
-                  <Nav.Link>Stores</Nav.Link>
-                </LinkContainer>
+                {user?.role !== 'store_owner' && (
+                  <LinkContainer to="/stores">
+                    <Nav.Link>Stores</Nav.Link>
+                  </LinkContainer>
+                )}
 
-                <LinkContainer to="/ratings/history">
-                  <Nav.Link>My Ratings</Nav.Link>
-                </LinkContainer>
+                {user?.role !== 'store_owner' && user?.role !== 'admin' && (
+                  <LinkContainer to="/ratings/history">
+                    <Nav.Link>My Ratings</Nav.Link>
+                  </LinkContainer>
+                )}
 
                 <LinkContainer to="/profile">
                   <Nav.Link>Profile</Nav.Link>
