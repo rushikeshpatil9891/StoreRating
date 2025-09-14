@@ -312,21 +312,3 @@ npm test
 ## 📝 License
 
 This project is licensed under the ISC License.
-
-## 📞 Support
-
-For support or questions, please open an issue in the GitHub repository.
-
-## 🔄 Development Phases
-
-- ✅ **Phase 1**: Project Setup and Database Schema
-- ✅ **Phase 2**: Authentication System
-- ✅ **Phase 3**: User Management
-- ✅ **Phase 4**: Store Management
-- ✅ **Phase 5**: Rating System
-- ✅ **Phase 6**: Dashboards and Analytics
-- 🔄 **Phase 7**: Advanced Features & Optimization
-
----
-
-**Built with ❤️ using React, Node.js, Express, and MySQL**
