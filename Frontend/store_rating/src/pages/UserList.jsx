@@ -87,21 +87,6 @@ const UserList = () => {
     }
   };
 
-  // Handle Scorable toggle
-  const handleScorableChange = async (userId, scorable) => {
-    try {
-      await api.put(`/users/${userId}`, { scorable });
-      setUsers(prevUsers =>
-        prevUsers.map(u =>
-          u.id === userId ? { ...u, scorable } : u
-        )
-      );
-    } catch (error) {
-      setError('Failed to update scorable status');
-      console.error('Scorable update error:', error);
-    }
-  };
-
   const filteredUsers = users.filter(user =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -192,7 +177,6 @@ const UserList = () => {
                         <th>Name</th>
                         <th>Email</th>
                         <th>Role</th>
-                        <th>Scorable</th>
                         <th>Address</th>
                         <th>Created</th>
                         <th>Actions</th>
@@ -207,15 +191,6 @@ const UserList = () => {
                             <Badge bg={getRoleBadgeVariant(user.role)}>
                               {user.role}
                             </Badge>
-                          </td>
-                          <td>
-                            <Form.Check
-                              type="switch"
-                              id={`scorable-switch-${user.id}`}
-                              checked={!!user.scorable}
-                              onChange={e => handleScorableChange(user.id, e.target.checked)}
-                              label={user.scorable ? "Yes" : "No"}
-                            />
                           </td>
                           <td>{user.address || 'N/A'}</td>
                           <td>
