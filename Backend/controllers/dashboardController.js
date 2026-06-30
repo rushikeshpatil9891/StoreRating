@@ -27,7 +27,7 @@ class DashboardController {
         sortBy: 'created_at',
         sortOrder: 'desc',
         limit: 5
-      });
+      });   
 
       // Get top rated stores
       const topRatedStores = await Store.findAll({
