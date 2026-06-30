@@ -19,7 +19,7 @@ class DashboardController {
       const recentUsers = await User.findAll({
         sortBy: 'created_at',
         sortOrder: 'desc',
-        limit: 5
+       limit : 5
       });
 
       // Get recent stores
